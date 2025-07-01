@@ -1,7 +1,8 @@
 {
-  "name": "imsa",
+  "name": "nidiacv",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -13,7 +14,6 @@
   "dependencies": {
     "@react-three/drei": "^10.4.2",
     "@react-three/fiber": "^9.1.4",
-    "cheerio": "^1.1.0",
     "firebase": "^11.8.1",
     "next": "15.3.3",
     "react": "^19.0.0",
