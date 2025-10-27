@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Función helper para verificar si el usuario está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Función helper para verificar si el usuario es admin
+    // Ahora acepta cualquier usuario autenticado como admin
+    function isAdmin() {
+      return isAuthenticated();
+    }
+
+    // Colección de información personal
+    match /personal/{document} {
+      // Lectura pública para el sitio web
+      allow read: if true;
+
+      // Solo admin puede escribir
+      allow write: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Colección de contenido del CV (solo admin puede modificar)
+    match /cv-content/{document} {
+      // Lectura pública para el sitio web
+      allow read: if true;
+
+      // Solo admin puede escribir
+      allow write: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Colección de proyectos del portafolio
+    match /projects/{document} {
+      // Lectura pública para el sitio web
+      allow read: if true;
+
+      // Solo admin puede gestionar
+      allow write: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Colección de contenido del CV (solo admin puede modificar)
+    match /experiences/{document} {
+      // Lectura pública
+      allow read: if true;
+
+      // Solo admin puede gestionar
+      allow write: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Colección de educación
+    match /education/{document} {
+      // Lectura pública
+      allow read: if true;
+
+      // Solo admin puede gestionar
+      allow write: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Colección de certificaciones
+    match /certifications/{document} {
+      // Lectura pública
+      allow read: if true;
+
+      // Solo admin puede gestionar
+      allow write: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Colección de habilidades
+    match /skills/{document} {
+      // Lectura pública
+      allow read: if true;
+
+      // Solo admin puede gestionar
+      allow write: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Colección de traducciones
+    match /translations/{document} {
+      // Lectura pública
+      allow read: if true;
+
+      // Solo admin puede gestionar
+      allow write: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Colección de configuración del sitio
+    match /site-config/{document} {
+      // Solo admin puede acceder
+      allow read, write, update, delete: if isAdmin();
+    }
+
+    // Colección de logs de administración
+    match /admin-logs/{document} {
+      // Solo admin puede acceder
+      allow read, write, update, delete: if isAdmin();
+    }
+
+    // Denegar acceso a cualquier otra colección
+    match /{document=**} {
+      allow read, write, update, delete: if false;
+    }
+  }
+}

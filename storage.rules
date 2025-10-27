@@ -1,0 +1,44 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Función helper para verificar autenticación
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Función para validar tipo de archivo de imagen
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    // Función para validar tamaño de archivo (máximo 5MB)
+    function isValidSize() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // Imágenes de perfil - solo usuarios autenticados pueden subir
+    match /profile-images/{imageId} {
+      // Lectura pública
+      allow read: if true;
+      
+      // Escritura solo para usuarios autenticados
+      allow write: if isAuthenticated() && isImage() && isValidSize();
+      allow delete: if isAuthenticated();
+    }
+
+    // Imágenes del portafolio - solo usuarios autenticados pueden subir
+    match /portfolio-images/{imageId} {
+      // Lectura pública
+      allow read: if true;
+      
+      // Escritura solo para usuarios autenticados
+      allow write: if isAuthenticated() && isImage() && isValidSize();
+      allow delete: if isAuthenticated();
+    }
+
+    // Denegar acceso a otras rutas
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
