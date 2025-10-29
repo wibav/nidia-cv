@@ -50,6 +50,7 @@ export function Header() {
     const title = personalInfo?.title || t('title');
     const location = personalInfo?.location || t('location');
     const email = personalInfo?.email || t('email');
+    const phone = personalInfo?.phone || '';
     const linkedin = personalInfo?.linkedin || 'https://www.linkedin.com/in/nidia-nahas/';
     const profileImage = personalInfo?.profileImage;
 
@@ -91,14 +92,16 @@ export function Header() {
                             {title}
                         </p>
                         <div
-                            className="mt-4 text-gray-300"
-                            style={{ fontFamily: theme.textFont ? getFontFamily(theme.textFont) : 'system-ui' }}
+                            className="mt-4"
+                            style={{ fontFamily: theme.textFont ? getFontFamily(theme.textFont) : 'system-ui', color: theme?.textColor || '#d1d5db' }}
                         >
                             <p>{location}</p>
                             <p>{email}</p>
+                            {phone && <p>{phone}</p>}
                             <a
                                 href={linkedin}
-                                className="inline-flex items-center gap-2 text-purple-300 hover:text-purple-200 transition-colors"
+                                className="inline-flex items-center gap-2 hover:opacity-80 transition-opacity"
+                                style={{ color: theme?.titleColor || '#a78bfa' }}
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >

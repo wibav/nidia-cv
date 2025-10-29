@@ -43,7 +43,7 @@ export function ObjectiveSection() {
     return (
         <section id="about" className="px-6 py-16 max-w-5xl mx-auto">
             <h2 className="text-2xl font-semibold mb-4 text-center" style={{ color: theme.titleColor }}>Objetivo Profesional</h2>
-            <p className="text-gray-300 leading-relaxed text-center">
+            <p className="leading-relaxed text-center" style={{ color: theme?.textColor || '#1f2937' }}>
                 {personalInfo?.objective || 'Información no disponible. Complete su perfil en el panel de administración.'}
             </p>
         </section>
