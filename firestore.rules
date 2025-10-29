@@ -112,6 +112,17 @@ service cloud.firestore {
       allow read, write, update, delete: if isAdmin();
     }
 
+    // Colección de configuración del sitio (tema, colores, etc.)
+    match /settings/{document} {
+      // Lectura pública para el sitio web
+      allow read: if true;
+
+      // Solo admin puede gestionar
+      allow write: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
     // Denegar acceso a cualquier otra colección
     match /{document=**} {
       allow read, write, update, delete: if false;

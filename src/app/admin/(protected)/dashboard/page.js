@@ -195,6 +195,15 @@ export default function DashboardPage() {
                             Gestiona tus competencias en software BIM y arquitectónico
                         </p>
                     </Link>
+
+                    <Link href="/admin/theme" className="bg-gray-700 hover:bg-gray-600 p-4 rounded-lg border border-gray-600 hover:border-purple-500 transition-all group">
+                        <h3 className="text-lg font-medium text-purple-300 mb-1 group-hover:text-purple-200">
+                            🎨 Configuración de Tema
+                        </h3>
+                        <p className="text-gray-400 text-sm">
+                            Personaliza los colores de tu portafolio
+                        </p>
+                    </Link>
                 </div>
             </div>
 

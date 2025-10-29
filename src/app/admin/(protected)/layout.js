@@ -88,13 +88,7 @@ export default function ProtectedLayout({ children }) {
                                 <span>Habilidades</span>
                             </Link>
 
-                            <Link
-                                href="/admin/translations"
-                                className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors"
-                            >
-                                <span>🌐</span>
-                                <span>Traducciones</span>
-                            </Link>
+                            {/* Traducciones eliminadas del admin - opción retirada */}
 
                             <hr className="my-4 border-gray-600" />
 
