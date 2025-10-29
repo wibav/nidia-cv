@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import Link from 'next/link';
 import MarkdownEditor from '@/components/MarkdownEditor';
+import MonthYearPicker from '@/components/MonthYearPicker';
 
 export default function ExperienceFormPage() {
     const router = useRouter();
@@ -30,7 +31,7 @@ export default function ExperienceFormPage() {
 
     const fetchExperience = async () => {
         try {
-            const docRef = doc(db, 'experience', experienceId);
+            const docRef = doc(db, 'experiences', experienceId);
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
@@ -41,17 +42,17 @@ export default function ExperienceFormPage() {
                     location: data.location || '',
                     description: data.description || '',
                     technologies: data.technologies || [],
-                    startDate: data.startDate ? new Date(data.startDate.seconds * 1000).toISOString().split('T')[0] : '',
-                    endDate: data.endDate ? new Date(data.endDate.seconds * 1000).toISOString().split('T')[0] : '',
+                    startDate: data.startDate ? new Date(data.startDate.seconds * 1000).toISOString().slice(0, 7) : '',
+                    endDate: data.endDate ? new Date(data.endDate.seconds * 1000).toISOString().slice(0, 7) : '',
                     current: data.current || false
                 });
             } else {
-                alert('Experiencia no encontrada');
+                alert('Experiencia profesional no encontrada');
                 router.push('/admin/experience');
             }
         } catch (error) {
             console.error('Error obteniendo experiencia:', error);
-            alert('Error al cargar la experiencia');
+            alert('Error al cargar la experiencia profesional');
             router.push('/admin/experience');
         } finally {
             setLoading(false);
@@ -68,7 +69,9 @@ export default function ExperienceFormPage() {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: type === 'checkbox' ? checked : value,
+            // Limpiar endDate si se marca "actual"
+            ...(name === 'current' && checked ? { endDate: '' } : {})
         }));
         if (errors[name]) {
             setErrors(prev => ({
@@ -125,10 +128,14 @@ export default function ExperienceFormPage() {
 
         if (!formData.startDate) {
             newErrors.startDate = 'La fecha de inicio es obligatoria';
+        } else if (!/^\d{4}-\d{2}$/.test(formData.startDate)) {
+            newErrors.startDate = 'La fecha de inicio debe tener formato YYYY-MM';
         }
 
         if (!formData.current && !formData.endDate) {
             newErrors.endDate = 'La fecha de fin es obligatoria (o marca "Trabajo actual")';
+        } else if (!formData.current && formData.endDate && !/^\d{4}-\d{2}$/.test(formData.endDate)) {
+            newErrors.endDate = 'La fecha de fin debe tener formato YYYY-MM';
         }
 
         if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
@@ -154,16 +161,16 @@ export default function ExperienceFormPage() {
 
         try {
             const docId = experienceId || new Date().getTime().toString();
-            const docRef = doc(db, 'experience', docId);
+            const docRef = doc(db, 'experiences', docId);
 
             const experienceData = {
                 position: formData.position.trim(),
                 company: formData.company.trim(),
                 location: formData.location.trim(),
                 description: formData.description.trim(),
-                technologies: formData.technologies,
-                startDate: Timestamp.fromDate(new Date(formData.startDate)),
-                endDate: formData.current ? null : Timestamp.fromDate(new Date(formData.endDate)),
+                technologies: formData.technologies.length > 0 ? formData.technologies : [],
+                startDate: Timestamp.fromDate(new Date(formData.startDate + '-01')),
+                endDate: formData.current || !formData.endDate ? null : Timestamp.fromDate(new Date(formData.endDate + '-01')),
                 current: formData.current,
                 updatedAt: Timestamp.now()
             };
@@ -171,8 +178,8 @@ export default function ExperienceFormPage() {
             await setDoc(docRef, experienceData, { merge: false });
             router.push('/admin/experience');
         } catch (error) {
-            console.error('Error guardando experiencia:', error);
-            alert('Error al guardar la experiencia. Inténtalo nuevamente.');
+            console.log('Error guardando experiencia:', error);
+            alert('Error al guardar la experiencia profesional. Inténtalo nuevamente.');
         } finally {
             setSaving(false);
         }
@@ -200,7 +207,7 @@ export default function ExperienceFormPage() {
                     </Link>
                     <span className="text-gray-400">|</span>
                     <h1 className="text-3xl font-bold">
-                        {isEditing ? 'Editar' : 'Nueva'} Experiencia Laboral
+                        {isEditing ? 'Editar' : 'Nueva'} Experiencia Profesional
                     </h1>
                 </div>
             </div>
@@ -213,7 +220,7 @@ export default function ExperienceFormPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label htmlFor="position" className="block text-sm font-medium text-gray-300 mb-2">
-                                    Puesto <span className="text-red-500">*</span>
+                                    Rol/Puesto Arquitectónico <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -223,7 +230,7 @@ export default function ExperienceFormPage() {
                                     onChange={handleChange}
                                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${errors.position ? 'border-red-500' : 'border-gray-600'
                                         } bg-gray-700 text-white`}
-                                    placeholder="Ej: Senior Developer"
+                                    placeholder="Ej: Arquitecto Senior, Project Manager, BIM Coordinator"
                                 />
                                 {errors.position && (
                                     <p className="mt-1 text-sm text-red-400">{errors.position}</p>
@@ -232,7 +239,7 @@ export default function ExperienceFormPage() {
 
                             <div>
                                 <label htmlFor="company" className="block text-sm font-medium text-gray-300 mb-2">
-                                    Empresa <span className="text-red-500">*</span>
+                                    Estudio/Empresa <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -242,7 +249,7 @@ export default function ExperienceFormPage() {
                                     onChange={handleChange}
                                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${errors.company ? 'border-red-500' : 'border-gray-600'
                                         } bg-gray-700 text-white`}
-                                    placeholder="Nombre de la empresa"
+                                    placeholder="Ej: Estudio Arquitectónico Pérez, Constructora XYZ"
                                 />
                                 {errors.company && (
                                     <p className="mt-1 text-sm text-red-400">{errors.company}</p>
@@ -261,7 +268,7 @@ export default function ExperienceFormPage() {
                                     onChange={handleChange}
                                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${errors.location ? 'border-red-500' : 'border-gray-600'
                                         } bg-gray-700 text-white`}
-                                    placeholder="Ciudad, País"
+                                    placeholder="Ciudad, Región, País"
                                 />
                                 {errors.location && (
                                     <p className="mt-1 text-sm text-red-400">{errors.location}</p>
@@ -272,14 +279,15 @@ export default function ExperienceFormPage() {
                                 <label htmlFor="startDate" className="block text-sm font-medium text-gray-300 mb-2">
                                     Fecha de Inicio <span className="text-red-500">*</span>
                                 </label>
-                                <input
-                                    type="date"
-                                    id="startDate"
-                                    name="startDate"
+                                <MonthYearPicker
                                     value={formData.startDate}
-                                    onChange={handleChange}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${errors.startDate ? 'border-red-500' : 'border-gray-600'
-                                        } bg-gray-700 text-white`}
+                                    onChange={(date) => {
+                                        setFormData(prev => ({ ...prev, startDate: date }));
+                                        if (errors.startDate) {
+                                            setErrors(prev => ({ ...prev, startDate: '' }));
+                                        }
+                                    }}
+                                    placeholder="Selecciona mes y año de inicio"
                                 />
                                 {errors.startDate && (
                                     <p className="mt-1 text-sm text-red-400">{errors.startDate}</p>
@@ -290,16 +298,19 @@ export default function ExperienceFormPage() {
                                 <label htmlFor="endDate" className="block text-sm font-medium text-gray-300 mb-2">
                                     Fecha de Fin
                                 </label>
-                                <input
-                                    type="date"
-                                    id="endDate"
-                                    name="endDate"
+                                <MonthYearPicker
                                     value={formData.endDate}
-                                    onChange={handleChange}
-                                    disabled={formData.current}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${errors.endDate ? 'border-red-500' : 'border-gray-600'
-                                        } bg-gray-700 text-white disabled:opacity-50 disabled:cursor-not-allowed`}
+                                    onChange={(date) => {
+                                        setFormData(prev => ({ ...prev, endDate: date }));
+                                        if (errors.endDate) {
+                                            setErrors(prev => ({ ...prev, endDate: '' }));
+                                        }
+                                    }}
+                                    placeholder="Selecciona mes y año de fin"
                                 />
+                                {formData.current && (
+                                    <p className="mt-2 text-xs text-purple-300">✓ Actualmente trabajas aquí</p>
+                                )}
                                 {errors.endDate && (
                                     <p className="mt-1 text-sm text-red-400">{errors.endDate}</p>
                                 )}
@@ -330,7 +341,7 @@ export default function ExperienceFormPage() {
                         <MarkdownEditor
                             value={formData.description}
                             onChange={handleDescriptionChange}
-                            placeholder="Describe tus responsabilidades, logros y tareas realizadas..."
+                            placeholder="Describe tus responsabilidades arquitectónicas, proyectos destacados, metodologías utilizadas, equipos liderados, etc..."
                         />
                         {errors.description && (
                             <p className="mt-1 text-sm text-red-400">{errors.description}</p>
@@ -339,7 +350,7 @@ export default function ExperienceFormPage() {
 
                     <div className="mb-6">
                         <label htmlFor="tech" className="block text-sm font-medium text-gray-300 mb-2">
-                            Tecnologías Utilizadas
+                            Software y Herramientas Arquitectónicas
                         </label>
                         <div className="flex gap-2">
                             <input
@@ -354,7 +365,7 @@ export default function ExperienceFormPage() {
                                     }
                                 }}
                                 className="flex-1 px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-gray-700 text-white"
-                                placeholder="Ej: React, Node.js, PostgreSQL"
+                                placeholder="Ej: AutoCAD, Revit, SketchUp, V-Ray, BIM 360"
                             />
                             <button
                                 type="button"

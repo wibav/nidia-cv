@@ -11,19 +11,30 @@
     "build:firebase": "next build && next export"
   },
   "dependencies": {
-    "@react-three/drei": "^10.4.2",
-    "@react-three/fiber": "^9.1.4",
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.4.0",
+    "@tiptap/pm": "^3.9.0",
+    "@tiptap/react": "^3.9.0",
+    "@tiptap/starter-kit": "^3.9.0",
     "@uiw/react-md-editor": "^4.0.8",
+    "draftjs-to-html": "^0.9.1",
     "firebase": "^11.8.1",
+    "html-to-draftjs": "^1.5.0",
+    "immutable": "^5.1.4",
     "next": "15.3.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-beautiful-dnd": "^13.1.1",
+    "react-dom": "^19.2.0",
+    "react-draft-wysiwyg": "^1.15.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
+    "@typescript-eslint/parser": "^8.46.2",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "typescript": "^5.9.3"
   }
 }

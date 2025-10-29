@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import Link from 'next/link';
 import MarkdownEditor from '@/components/MarkdownEditor';
+import MonthYearPicker from '@/components/MonthYearPicker';
 
 export default function ProjectFormPage() {
     const router = useRouter();
@@ -29,7 +30,7 @@ export default function ProjectFormPage() {
     });
 
     const [tech, setTech] = useState('');
-    const [imageFiles, setImageFiles] = useState([]);
+    const [imageUrl, setImageUrl] = useState('');
     const [imagePreviews, setImagePreviews] = useState([]);
     const [loading, setLoading] = useState(isEditing);
     const [saving, setSaving] = useState(false);
@@ -66,16 +67,16 @@ export default function ProjectFormPage() {
                 setFormData({
                     title: data.title || '',
                     description: data.description || '',
-                    technologies: data.technologies || [],
-                    images: data.images || [],
+                    technologies: Array.isArray(data.technologies) ? data.technologies : [],
+                    images: Array.isArray(data.images) ? data.images : [],
                     demoUrl: data.demoUrl || '',
                     repoUrl: data.repoUrl || '',
                     websiteUrl: data.websiteUrl || '',
                     category: data.category || '',
                     status: data.status || 'completed',
-                    featured: data.featured || false,
-                    startDate: data.startDate ? new Date(data.startDate.seconds * 1000).toISOString().split('T')[0] : '',
-                    endDate: data.endDate ? new Date(data.endDate.seconds * 1000).toISOString().split('T')[0] : ''
+                    featured: Boolean(data.featured),
+                    startDate: data.startDate ? new Date(data.startDate.seconds * 1000).toISOString().slice(0, 7) : '',
+                    endDate: data.endDate ? new Date(data.endDate.seconds * 1000).toISOString().slice(0, 7) : ''
                 });
                 setImagePreviews(data.images || []);
             } else {
@@ -141,47 +142,29 @@ export default function ProjectFormPage() {
         }));
     };
 
-    const handleImageChange = (e) => {
-        const files = Array.from(e.target.files);
+    const handleAddImageUrl = () => {
+        if (!imageUrl.trim()) return;
 
-        if (files.length + formData.images.length > 10) {
-            alert('Máximo 10 imágenes por proyecto');
+        // Validar que sea una URL válida
+        try {
+            new URL(imageUrl);
+        } catch {
+            setErrors(prev => ({ ...prev, images: 'Por favor ingresa una URL válida' }));
             return;
         }
 
-        const validFiles = [];
-        const previews = [];
+        if (formData.images.length >= 10) {
+            setErrors(prev => ({ ...prev, images: 'Máximo 10 imágenes por proyecto' }));
+            return;
+        }
 
-        files.forEach(file => {
-            if (!file.type.startsWith('image/')) {
-                alert(`El archivo "${file.name}" no es una imagen válida`);
-                return;
-            }
-
-            if (file.size > 1 * 1024 * 1024) {
-                alert(`La imagen "${file.name}" supera 1MB`);
-                return;
-            }
-
-            validFiles.push(file);
-
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result;
-                previews.push(base64String);
-
-                if (previews.length === validFiles.length) {
-                    setImagePreviews(prev => [...prev, ...previews]);
-                    setFormData(prev => ({
-                        ...prev,
-                        images: [...prev.images, ...previews]
-                    }));
-                }
-            };
-            reader.readAsDataURL(file);
-        });
-
-        setImageFiles(prev => [...prev, ...validFiles]);
+        setFormData(prev => ({
+            ...prev,
+            images: [...prev.images, imageUrl.trim()]
+        }));
+        setImagePreviews(prev => [...prev, imageUrl.trim()]);
+        setImageUrl('');
+        setErrors(prev => ({ ...prev, images: '' }));
     };
 
     const removeImage = (index) => {
@@ -190,7 +173,6 @@ export default function ProjectFormPage() {
             ...prev,
             images: prev.images.filter((_, i) => i !== index)
         }));
-        setImageFiles(prev => prev.filter((_, i) => i !== index));
     };
 
     const moveImage = (fromIndex, toIndex) => {
@@ -259,16 +241,16 @@ export default function ProjectFormPage() {
             const projectData = {
                 title: formData.title.trim(),
                 description: formData.description.trim(),
-                technologies: formData.technologies,
-                images: formData.images,
+                technologies: formData.technologies.length > 0 ? formData.technologies : [],
+                images: formData.images.length > 0 ? formData.images : [],
                 demoUrl: formData.demoUrl.trim() || null,
                 repoUrl: formData.repoUrl.trim() || null,
                 websiteUrl: formData.websiteUrl.trim() || null,
                 category: formData.category,
                 status: formData.status,
                 featured: formData.featured,
-                startDate: formData.startDate ? Timestamp.fromDate(new Date(formData.startDate)) : null,
-                endDate: formData.endDate ? Timestamp.fromDate(new Date(formData.endDate)) : null,
+                startDate: formData.startDate ? Timestamp.fromDate(new Date(formData.startDate + '-01')) : null,
+                endDate: formData.endDate ? Timestamp.fromDate(new Date(formData.endDate + '-01')) : null,
                 createdAt: isEditing ? undefined : Timestamp.now(),
                 updatedAt: Timestamp.now()
             };
@@ -393,27 +375,34 @@ export default function ProjectFormPage() {
                                 <label htmlFor="startDate" className="block text-sm font-medium text-gray-300 mb-2">
                                     Fecha de Inicio
                                 </label>
-                                <input
-                                    type="date"
-                                    id="startDate"
-                                    name="startDate"
+                                <MonthYearPicker
                                     value={formData.startDate}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-gray-700 text-white"
+                                    onChange={(date) => {
+                                        setFormData(prev => ({ ...prev, startDate: date }));
+                                        if (errors.startDate) {
+                                            setErrors(prev => ({ ...prev, startDate: '' }));
+                                        }
+                                    }}
+                                    placeholder="Selecciona mes y año de inicio"
                                 />
+                                {errors.startDate && (
+                                    <p className="mt-1 text-sm text-red-400">{errors.startDate}</p>
+                                )}
                             </div>
 
                             <div>
                                 <label htmlFor="endDate" className="block text-sm font-medium text-gray-300 mb-2">
                                     Fecha de Finalización
                                 </label>
-                                <input
-                                    type="date"
-                                    id="endDate"
-                                    name="endDate"
+                                <MonthYearPicker
                                     value={formData.endDate}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-gray-700 text-white"
+                                    onChange={(date) => {
+                                        setFormData(prev => ({ ...prev, endDate: date }));
+                                        if (errors.endDate) {
+                                            setErrors(prev => ({ ...prev, endDate: '' }));
+                                        }
+                                    }}
+                                    placeholder="Selecciona mes y año de fin"
                                 />
                                 {errors.endDate && (
                                     <p className="mt-1 text-sm text-red-400">{errors.endDate}</p>
@@ -504,17 +493,36 @@ export default function ProjectFormPage() {
                     <div className="mb-6">
                         <h3 className="text-lg font-semibold text-purple-300 mb-4">Imágenes del Proyecto Arquitectónico</h3>
                         <p className="text-sm text-gray-400 mb-4">
-                            Sube hasta 10 imágenes del proyecto (máx. 1MB cada una). Incluye renders 3D, planos, fotografías de obra y detalles constructivos. La primera imagen será la portada.
+                            Agrega hasta 10 URLs de imágenes del proyecto. Incluye renders 3D, planos, fotografías de obra y detalles constructivos. La primera imagen será la portada.
                         </p>
 
                         <div className="mb-4">
-                            <input
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700"
-                            />
+                            <div className="flex gap-2">
+                                <input
+                                    type="url"
+                                    value={imageUrl}
+                                    onChange={(e) => setImageUrl(e.target.value)}
+                                    onKeyPress={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleAddImageUrl();
+                                        }
+                                    }}
+                                    className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${errors.images ? 'border-red-500' : 'border-gray-600'
+                                        } bg-gray-700 text-white`}
+                                    placeholder="https://ejemplo.com/imagen.jpg"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleAddImageUrl}
+                                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                                >
+                                    Agregar
+                                </button>
+                            </div>
+                            {errors.images && (
+                                <p className="mt-1 text-sm text-red-400">{errors.images}</p>
+                            )}
                         </div>
 
                         {imagePreviews.length > 0 && (
@@ -525,6 +533,9 @@ export default function ProjectFormPage() {
                                             src={preview}
                                             alt={`Imagen ${index + 1}`}
                                             className="w-full h-24 object-cover rounded-lg border border-gray-600"
+                                            onError={(e) => {
+                                                e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjMzc0MTUxIi8+CjxwYXRoIGQ9Ik0xMiA2VjE4TTYuNSA2LjVMMTcuNSA2LjUiIHN0cm9rZT0iIzk3OTdhNyIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+';
+                                            }}
                                         />
                                         <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-2">
                                             {index > 0 && (

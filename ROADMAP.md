@@ -12,15 +12,12 @@
 │  Fase 3: ✅ Experiencia Laboral (CRUD + WYSIWYG)            │
 │  Fase 4: ✅ Portafolio Arquitectónico (CRUD + Imágenes)     │
 │  Fase 5: ✅ Educación & Certificaciones (CRUD)             │
+│  Fase 6: ✅ Habilidades Técnicas (Software Arquitectónico)  │
 │                                                             │
-│  Fase 6: ⏳ Habilidades Técnicas (Software Arquitectónico)  │
-│  Fase 7: ⏳ Traducciones Multiidioma                        │
-│                                                             │
-│  Fase 8: ⏳ API Backend (RESTful)                           │
-│  Fase 9: ⏳ Preview & Publicación                           │
-│  Fase 10: ⏳ Configuración Avanzada                         │
-│  Fase 11: ⏳ Optimizaciones & Testing                       │
-│  Fase 12: ⏳ Deployment & Monitoreo                         │
+│  Fase 7: ⏳ Llenar Dashboard con Datos Reales               │
+│  Fase 8: ⏳ Preview & Publicación                           │
+│  Fase 9: ⏳ Configuración Avanzada                          │
+│  Fase 10: ⏳ Optimizaciones & Testing                       │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -40,12 +37,13 @@
 
 ### 2️⃣ Experiencia Profesional
 
-- **Estado**: ✅ Fase 3 Completada
-- **Descripción**: CRUD completo de experiencias laborales
-- **Editor**: WYSIWYG para descripción de responsabilidades
+- **Estado**: ✅ Fase 3 Completada (Adaptada para Arquitectura)
+- **Descripción**: CRUD completo de experiencias profesionales arquitectónicas
+- **Editor**: WYSIWYG para descripción de responsabilidades arquitectónicas
 - **Ubicación**: `/admin/experience`
 - **Firestore**: Colección `experiences`
-- **Campos**: Puesto, empresa, ubicación, fechas, tecnologías, descripción
+- **Campos**: Rol arquitectónico, estudio/empresa, ubicación, fechas, software arquitectónico, descripción
+- **Características**: Campos adaptados para arquitectura (AutoCAD, Revit, BIM, etc.)
 
 ### 3️⃣ Portafolio Arquitectónico
 
@@ -83,7 +81,7 @@
 
 ## 📋 Detalles Técnicos por Fase
 
-### Fase 4: ✅ Portafolio Arquitectónico (COMPLETADA)
+### Fase 4: ✅ Portafolio Arquitectónico (COMPLETADA - Optimizado)
 
 ```
 Ubicación: /admin/portfolio (alias de /admin/projects)
@@ -94,7 +92,7 @@ Estructura Firestore:
 │   ├── title: string
 │   ├── description: string (Markdown)
 │   ├── technologies: array<string> (AutoCAD, Revit, etc.)
-│   ├── images: array<base64> (hasta 10 imágenes, 1MB cada una)
+│   ├── images: array<string> (URLs de imágenes, hasta 10)
 │   ├── demoUrl: string (Galería de imágenes)
 │   ├── repoUrl: string (Proyecto en plataforma)
 │   ├── websiteUrl: string (Sitio web del proyecto)
@@ -117,12 +115,18 @@ Categorías Arquitectónicas:
 
 Funcionalidades Implementadas:
 ✅ CRUD completo de proyectos
-✅ Múltiples imágenes con Base64 (sin Firebase Storage)
+✅ Sistema de URLs para imágenes (optimizado para Firebase Free Tier)
 ✅ Filtros por software y categoría
 ✅ Vista de galería y lista
 ✅ Editor Markdown para descripciones
 ✅ Estados de proyecto adaptados
 ✅ Validación completa de formularios
+✅ Preview de imágenes desde URLs
+
+⚠️ CAMBIO IMPORTANTE (28 Octubre 2025):
+- Migrado de Base64 a URLs para optimizar espacio de almacenamiento
+- Eliminado límite de 1MB por imagen (ahora limitado por hosting externo)
+- Mantiene funcionalidad completa sin usar Firebase Storage
 ```
 
 ### Fase 5: ✅ Educación & Certificaciones (COMPLETADA)
@@ -197,13 +201,14 @@ Páginas:
 ## 🔄 Flujo de Implementación
 
 ```
-SEMANA 1: ✅ Fase 4 - Portafolio Arquitectónico (COMPLETADO)
+SEMANA 1: ✅ Fase 4 - Portafolio Arquitectónico (COMPLETADO - Optimizado)
 ├─ ✅ Crear colección en Firestore
-├─ ✅ Base64 para imágenes (sin Firebase Storage)
+├─ ✅ URLs para imágenes (optimizado para Firebase Free Tier)
 ├─ ✅ Página lista (/admin/projects)
 ├─ ✅ Página CRUD (/admin/projects/new)
 ├─ ✅ Adaptación para arquitectura
 ├─ ✅ Editor Markdown para descripciones
+├─ ✅ Migración Base64 → URLs (28 Octubre 2025)
 └─ ✅ Tests de integración con Firestore
 
 SEMANA 2: ✅ Fase 5 - Educación & Certificaciones (COMPLETADO)
@@ -270,14 +275,15 @@ COMPLETADAS:
 ✅ Fase 3: Experiencia Laboral (100%)
 ✅ Fase 4: Portafolio Arquitectónico (100%)
 ✅ Fase 5: Educación & Certificaciones (100%)
+✅ Fase 6: Habilidades Técnicas Arquitectónicas (100%)
 
 EN PROGRESO: Ninguna
 
 PRÓXIMAS:
-⏳ Fase 6: Habilidades Técnicas Arquitectónicas (Estimado: 3-4 días)
-⏳ Fase 7: Soporte Multi-idioma (Estimado: 1 semana)
+⏳ Fase 7: Llenar Dashboard con Datos Reales (Próxima)
+⏳ Fase 8: Preview & Publicación
 
-TOTAL PROGRESO: 5/7 Fases = 71%
+TOTAL PROGRESO: 6/8 Fases = 75%
 ```
 
 ---
@@ -305,12 +311,16 @@ export default function SectionPage() {
 
 ```
 colecciones/
-├── personal
-├── experiences
-├── portfolio
-├── education
-├── certifications
-├── skills
+├── personal (información básica + imagen Base64)
+├── experiences (experiencias profesionales arquitectónicas)
+│   ├── position: "Arquitecto Senior, BIM Coordinator"
+│   ├── company: "Estudio Arquitectónico XYZ"
+│   ├── software: ["AutoCAD", "Revit", "SketchUp"]
+│   └── description: "proyectos arquitectónicos, metodologías BIM"
+├── portfolio (proyectos arquitectónicos + imágenes Base64)
+├── education (formación académica)
+├── certifications (certificaciones profesionales)
+├── skills (software arquitectónico + niveles)
 └── translations
 ```
 
@@ -344,11 +354,13 @@ colecciones/
 - Todos los campos de descripción usan **WYSIWYG (Markdown)**
 - Todos los datos se guardan en **Firestore** con validación
 - Manejo de fechas implementado con **input type="date"** (Fase 5)
+- **Experiencia profesional adaptada para arquitectura** (Fase 3)
+- **Sistema de imágenes optimizado: URLs en lugar de Base64** (Fase 4 - 28 Octubre 2025)
 - UI coherente con **dark theme de Tailwind**
 - Componentes **reutilizables** para acelerar desarrollo
 - **Deploy exitoso** en Firebase Hosting (https://nidia-cv.web.app)
 
 ---
 
-**Último Update**: 27 Octubre 2025
-**Próxima Revisión**: Después de completar Fase 6
+**Último Update**: 28 Octubre 2025
+**Próxima Revisión**: Después de completar Fase 7

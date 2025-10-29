@@ -1,45 +1,74 @@
 "use client";
-import { useLanguage } from '../contexts/LanguageContext';
-import { certifications } from '../data/cvData';
+import { useState, useEffect } from 'react';
+import { db } from '../lib/firebase';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 
 export function CertificationsSection() {
-    const { language, t } = useLanguage();
+    const [certifications, setCertifications] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const getTranslatedCertifications = () => {
-        return certifications.map(cert => ({
-            ...cert,
-            title: language === 'es' ? cert.title :
-                language === 'pt' ? (
-                    cert.title === 'Autodesk Revit MEP' ? 'Autodesk Revit MEP' :
-                        cert.title === 'Autodesk Revit Arquitectura' ? 'Autodesk Revit Arquitetura' :
-                            cert.title === 'SketchUp Pro' ? 'SketchUp Pro' :
-                                cert.title === 'Creación de proyectos de Interiorismo' ? 'Criação de projetos de Design de Interiores' :
-                                    cert.title
-                ) :
-                    cert.title,
-            date: language === 'es' ? cert.date :
-                language === 'pt' ? (
-                    cert.date === 'Diciembre 2024' ? 'Dezembro 2024' :
-                        cert.date === 'Marzo 2025' ? 'Março 2025' :
-                            cert.date === 'Febrero 2022' ? 'Fevereiro 2022' :
-                                cert.date === 'Agosto 2023' ? 'Agosto 2023' :
-                                    cert.date
-                ) :
-                    cert.date
-        }));
+    useEffect(() => {
+        fetchCertifications();
+    }, []);
+
+    const fetchCertifications = async () => {
+        try {
+            const q = query(collection(db, 'certifications'), orderBy('issuedDate', 'desc'));
+            const querySnapshot = await getDocs(q);
+            const certificationsData = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setCertifications(certificationsData);
+        } catch (error) {
+            console.error('Error fetching certifications:', error);
+        } finally {
+            setLoading(false);
+        }
     };
+
+    if (loading) {
+        return (
+            <section id="certifications" className="px-6 py-10 bg-gray-800">
+                <div className="max-w-5xl mx-auto">
+                    <div className="h-8 bg-gray-700 rounded w-48 mb-6"></div>
+                    <div className="grid md:grid-cols-2 gap-6">
+                        {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="animate-pulse bg-gray-700 p-4 rounded-lg">
+                                <div className="h-5 bg-gray-600 rounded w-3/4 mb-2"></div>
+                                <div className="h-4 bg-gray-600 rounded w-1/2 mb-1"></div>
+                                <div className="h-3 bg-gray-600 rounded w-1/4"></div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
+    if (certifications.length === 0) {
+        return null; // No mostrar sección si no hay certificaciones
+    }
 
     return (
         <section id="certifications" className="px-6 py-10 bg-gray-800">
             <div className="max-w-5xl mx-auto">
-                <h2 className="text-2xl font-semibold text-purple-300 mb-6">{t('certifications')}</h2>
+                <h2 className="text-2xl font-semibold text-purple-300 mb-6">Certificaciones</h2>
                 <div className="grid md:grid-cols-2 gap-6">
-                    {getTranslatedCertifications().map((cert, index) => (
-                        <div key={index} className="bg-gray-700 p-4 rounded-lg">
-                            <h3 className="text-purple-200 font-semibold">{cert.title}</h3>
-                            <p className="text-gray-300 text-sm">{cert.issuer} | {cert.date}</p>
+                    {certifications.map((cert) => (
+                        <div key={cert.id} className="bg-gray-700 p-4 rounded-lg">
+                            <h3 className="text-purple-200 font-semibold">{cert.name}</h3>
+                            <p className="text-gray-300 text-sm">{cert.institution}</p>
+                            <p className="text-gray-400 text-sm">
+                                Emitida: {cert.issuedDate ? new Date(cert.issuedDate).toLocaleDateString('es-ES') : 'Fecha no especificada'}
+                            </p>
                             {cert.certificateNumber && (
-                                <p className="text-gray-400 text-xs">Certificate N°: {cert.certificateNumber}</p>
+                                <p className="text-gray-400 text-xs">N°: {cert.certificateNumber}</p>
+                            )}
+                            {cert.description && (
+                                <div className="text-gray-300 text-sm mt-2">
+                                    <div dangerouslySetInnerHTML={{ __html: cert.description.replace(/\n/g, '<br>') }} />
+                                </div>
                             )}
                         </div>
                     ))}

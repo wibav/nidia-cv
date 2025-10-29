@@ -1,14 +1,31 @@
 "use client";
-import React from 'react';
-import { Canvas, useFrame } from "@react-three/fiber";
+import React, { useRef } from 'react';
+import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { useLanguage } from '../contexts/LanguageContext';
 
 function BoxDemo() {
-    const mesh = React.useRef();
-    useFrame((state, delta) => (mesh.current.rotation.y += delta));
+    const meshRef = useRef();
+
+    React.useEffect(() => {
+        let animationId;
+        const animate = () => {
+            if (meshRef.current) {
+                meshRef.current.rotation.y += 0.01;
+            }
+            animationId = requestAnimationFrame(animate);
+        };
+        animate();
+
+        return () => {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+        };
+    }, []);
+
     return (
-        <mesh ref={mesh}>
+        <mesh ref={meshRef}>
             <boxGeometry args={[1, 1, 1]} />
             <meshStandardMaterial color="#9d4edd" />
         </mesh>
@@ -28,7 +45,7 @@ export function Demo3DSection() {
                     <ambientLight intensity={0.5} />
                     <directionalLight position={[2, 5, 2]} intensity={1} />
                     <BoxDemo />
-                    <OrbitControls />
+                    <OrbitControls enableZoom={true} enablePan={true} enableRotate={true} />
                 </Canvas>
             </div>
         </section>

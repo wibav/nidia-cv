@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import Link from 'next/link';
 import MarkdownEditor from '@/components/MarkdownEditor';
+import MonthYearPicker from '@/components/MonthYearPicker';
 
 export default function EducationFormPage() {
     const router = useRouter();
@@ -40,8 +41,8 @@ export default function EducationFormPage() {
                     field: data.field || '',
                     location: data.location || '',
                     description: data.description || '',
-                    startDate: data.startDate ? new Date(data.startDate.seconds * 1000).toISOString().split('T')[0] : '',
-                    endDate: data.endDate ? new Date(data.endDate.seconds * 1000).toISOString().split('T')[0] : '',
+                    startDate: data.startDate ? new Date(data.startDate.seconds * 1000).toISOString().slice(0, 7) : '',
+                    endDate: data.endDate ? new Date(data.endDate.seconds * 1000).toISOString().slice(0, 7) : '',
                     current: data.current || false
                 });
             } else {
@@ -67,7 +68,9 @@ export default function EducationFormPage() {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: type === 'checkbox' ? checked : value,
+            // Limpiar endDate si se marca "actual"
+            ...(name === 'current' && checked ? { endDate: '' } : {})
         }));
         if (errors[name]) {
             setErrors(prev => ({
@@ -111,10 +114,14 @@ export default function EducationFormPage() {
 
         if (!formData.startDate) {
             newErrors.startDate = 'La fecha de inicio es obligatoria';
+        } else if (!/^\d{4}-\d{2}$/.test(formData.startDate)) {
+            newErrors.startDate = 'La fecha de inicio debe tener formato YYYY-MM';
         }
 
         if (!formData.current && !formData.endDate) {
             newErrors.endDate = 'La fecha de fin es obligatoria (o marca "Estudiando actualmente")';
+        } else if (!formData.current && formData.endDate && !/^\d{4}-\d{2}$/.test(formData.endDate)) {
+            newErrors.endDate = 'La fecha de fin debe tener formato YYYY-MM';
         }
 
         if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
@@ -148,8 +155,8 @@ export default function EducationFormPage() {
                 field: formData.field.trim(),
                 location: formData.location.trim(),
                 description: formData.description.trim(),
-                startDate: Timestamp.fromDate(new Date(formData.startDate)),
-                endDate: formData.current ? null : Timestamp.fromDate(new Date(formData.endDate)),
+                startDate: Timestamp.fromDate(new Date(formData.startDate + '-01')),
+                endDate: formData.current || !formData.endDate ? null : Timestamp.fromDate(new Date(formData.endDate + '-01')),
                 current: formData.current,
                 updatedAt: Timestamp.now()
             };
@@ -277,14 +284,15 @@ export default function EducationFormPage() {
                                 <label htmlFor="startDate" className="block text-sm font-medium text-gray-300 mb-2">
                                     Fecha de Inicio <span className="text-red-500">*</span>
                                 </label>
-                                <input
-                                    type="date"
-                                    id="startDate"
-                                    name="startDate"
+                                <MonthYearPicker
                                     value={formData.startDate}
-                                    onChange={handleChange}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${errors.startDate ? 'border-red-500' : 'border-gray-600'
-                                        } bg-gray-700 text-white`}
+                                    onChange={(date) => {
+                                        setFormData(prev => ({ ...prev, startDate: date }));
+                                        if (errors.startDate) {
+                                            setErrors(prev => ({ ...prev, startDate: '' }));
+                                        }
+                                    }}
+                                    placeholder="Selecciona mes y año de inicio"
                                 />
                                 {errors.startDate && (
                                     <p className="mt-1 text-sm text-red-400">{errors.startDate}</p>
@@ -295,16 +303,19 @@ export default function EducationFormPage() {
                                 <label htmlFor="endDate" className="block text-sm font-medium text-gray-300 mb-2">
                                     Fecha de Fin
                                 </label>
-                                <input
-                                    type="date"
-                                    id="endDate"
-                                    name="endDate"
+                                <MonthYearPicker
                                     value={formData.endDate}
-                                    onChange={handleChange}
-                                    disabled={formData.current}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${errors.endDate ? 'border-red-500' : 'border-gray-600'
-                                        } bg-gray-700 text-white disabled:opacity-50 disabled:cursor-not-allowed`}
+                                    onChange={(date) => {
+                                        setFormData(prev => ({ ...prev, endDate: date }));
+                                        if (errors.endDate) {
+                                            setErrors(prev => ({ ...prev, endDate: '' }));
+                                        }
+                                    }}
+                                    placeholder="Selecciona mes y año de fin"
                                 />
+                                {formData.current && (
+                                    <p className="mt-2 text-xs text-purple-300">✓ Actualmente estudiando aquí</p>
+                                )}
                                 {errors.endDate && (
                                     <p className="mt-1 text-sm text-red-400">{errors.endDate}</p>
                                 )}

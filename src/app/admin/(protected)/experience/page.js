@@ -16,7 +16,7 @@ export default function ExperienceAdminPage() {
 
     const fetchExperiences = async () => {
         try {
-            const experiencesQuery = query(collection(db, 'experience'), orderBy('startDate', 'desc'));
+            const experiencesQuery = query(collection(db, 'experiences'), orderBy('startDate', 'desc'));
             const snapshot = await getDocs(experiencesQuery);
             const experiencesData = snapshot.docs.map(doc => ({
                 id: doc.id,
@@ -31,17 +31,17 @@ export default function ExperienceAdminPage() {
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('¿Estás seguro de que quieres eliminar esta experiencia laboral?')) {
+        if (!confirm('¿Estás seguro de que quieres eliminar esta experiencia profesional?')) {
             return;
         }
 
         setDeleting(id);
         try {
-            await deleteDoc(doc(db, 'experience', id));
+            await deleteDoc(doc(db, 'experiences', id));
             setExperiences(experiences.filter(item => item.id !== id));
         } catch (error) {
             console.error('Error eliminando experiencia:', error);
-            alert('Error al eliminar la experiencia');
+            alert('Error al eliminar la experiencia profesional');
         } finally {
             setDeleting(null);
         }
@@ -79,9 +79,9 @@ export default function ExperienceAdminPage() {
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-4xl font-bold mb-2">Experiencia Laboral</h1>
+                    <h1 className="text-4xl font-bold mb-2">Experiencia Profesional</h1>
                     <p className="text-gray-400">
-                        {experiences.length} experiencia{experiences.length !== 1 ? 's' : ''} registrada{experiences.length !== 1 ? 's' : ''}
+                        {experiences.length} experiencia{experiences.length !== 1 ? 's' : ''} profesional{experiences.length !== 1 ? 'es' : ''} registrada{experiences.length !== 1 ? 's' : ''}
                     </p>
                 </div>
                 <Link href="/admin/experience/new" className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
@@ -92,7 +92,7 @@ export default function ExperienceAdminPage() {
             {experiences.length === 0 ? (
                 <div className="bg-gray-800 rounded-lg border border-gray-700 p-12 text-center">
                     <div className="text-6xl mb-4">💼</div>
-                    <h3 className="text-xl font-semibold mb-2">No hay experiencias laborales</h3>
+                    <h3 className="text-xl font-semibold mb-2">No hay experiencias profesionales</h3>
                     <p className="text-gray-400 mb-6">
                         Agrega tu primera experiencia profesional para comenzar
                     </p>
@@ -107,10 +107,10 @@ export default function ExperienceAdminPage() {
                             <thead className="bg-gray-700">
                                 <tr>
                                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                        Puesto
+                                        Rol Arquitectónico
                                     </th>
                                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                        Empresa
+                                        Estudio/Empresa
                                     </th>
                                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Período

@@ -1,7 +1,9 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Dashboard from "./components/Dashboard";
 import { AuthProvider } from "./context/AuthContext";
+import { LanguageProvider } from "../contexts/LanguageContext";
+import ErrorBoundary from "../components/ErrorBoundary";
+import FirebaseStatus from "../components/FirebaseStatus";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,9 +16,14 @@ export default function RootLayout({ children }) {
   return (
     <html lang="es">
       <body className={inter.className}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <ErrorBoundary>
+          <LanguageProvider>
+            <AuthProvider>
+              {children}
+              <FirebaseStatus />
+            </AuthProvider>
+          </LanguageProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

@@ -1,5 +1,4 @@
 "use client";
-import { LanguageProvider } from '../../contexts/LanguageContext';
 import { Header } from '../../components/Header';
 import { ObjectiveSection } from '../../components/ObjectiveSection';
 import { ExperienceSection } from '../../components/ExperienceSection';
@@ -8,7 +7,7 @@ import { Demo3DSection } from '../../components/Demo3DSection';
 import { SkillsSection } from '../../components/SkillsSection';
 import { CertificationsSection } from '../../components/CertificationsSection';
 
-function DashboardContent() {
+export default function Dashboard() {
     return (
         <div className="min-h-screen bg-gray-900 text-gray-100">
             <Header />
@@ -19,13 +18,5 @@ function DashboardContent() {
             <SkillsSection />
             <CertificationsSection />
         </div>
-    );
-}
-
-export default function Dashboard() {
-    return (
-        <LanguageProvider>
-            <DashboardContent />
-        </LanguageProvider>
     );
 }
