@@ -25,7 +25,7 @@ export default function Dashboard() {
             <ObjectiveSection />
             <ExperienceSection />
             <PortfolioSection />
-            <Demo3DSection />
+            {/* <Demo3DSection /> */}
             <SkillsSection />
             <CertificationsSection />
         </div>

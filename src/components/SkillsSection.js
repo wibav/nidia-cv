@@ -2,12 +2,14 @@
 import { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { useTheme } from '../contexts/ThemeContext';
 
 export function SkillsSection() {
     const [skills, setSkills] = useState([]);
     const [education, setEducation] = useState([]);
     const [certifications, setCertifications] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { theme } = useTheme();
 
     useEffect(() => {
         fetchAllData();
@@ -96,7 +98,7 @@ export function SkillsSection() {
 
     if (loading) {
         return (
-            <section id="education" className="px-6 py-10">
+            <section id="education" className="px-6 py-16">
                 <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
                     <div className="animate-pulse">
                         <div className="h-8 bg-gray-700 rounded w-32 mb-4"></div>
@@ -120,111 +122,89 @@ export function SkillsSection() {
     }
 
     return (
-        <section id="education" className="px-6 py-10">
-            <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
-                {/* Educación */}
-                <div>
-                    <h2 className="text-2xl font-semibold text-purple-300 mb-4">Educación</h2>
-                    {education.length === 0 ? (
-                        <div className="bg-gray-800 p-6 rounded-lg text-center">
-                            <p className="text-gray-400">No hay educación registrada aún.</p>
-                            <p className="text-gray-500 text-sm mt-2">Agregue educación desde el panel de administración.</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {education.map((edu) => (
-                                <div key={edu.id} className="bg-gray-800 p-6 rounded-lg">
-                                    <h3 className="text-lg font-semibold text-purple-200">
-                                        {edu.degree}
-                                    </h3>
-                                    <p className="text-gray-300">{edu.institution}</p>
-                                    <p className="text-gray-400 text-sm">
-                                        {formatDate(edu.startDate)} - {edu.current ? 'Presente' : formatDate(edu.endDate)}
-                                    </p>
-                                    {edu.field && (
-                                        <p className="text-purple-300 text-sm mt-1">
-                                            Especialidad: {edu.field}
-                                        </p>
-                                    )}
-                                    {edu.description && (
-                                        <div className="text-gray-300 text-sm mt-3">
-                                            <div dangerouslySetInnerHTML={{ __html: edu.description.replace(/\n/g, '<br>') }} />
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* Habilidades Técnicas */}
-                <div>
-                    <h2 className="text-2xl font-semibold text-purple-300 mb-4">Habilidades Técnicas</h2>
-                    {skills.length === 0 ? (
-                        <div className="bg-gray-800 p-6 rounded-lg text-center">
-                            <p className="text-gray-400">No hay habilidades registradas aún.</p>
-                            <p className="text-gray-500 text-sm mt-2">Agregue habilidades desde el panel de administración.</p>
-                        </div>
-                    ) : (
-                        <div className="bg-gray-800 p-6 rounded-lg">
-                            {/* Agrupar skills por categoría */}
-                            {['BIM Software', 'CAD Software', 'Modelado 3D', 'Render & Visualización', 'Gestión de Proyectos', 'Urbanismo y Paisajismo', 'Software de Oficina'].map(category => {
-                                const categorySkills = skills.filter(skill => skill.category === category);
-                                if (categorySkills.length === 0) return null;
-
-                                return (
-                                    <div key={category} className="mb-6">
-                                        <h4 className="text-purple-200 font-medium mb-3">{category}</h4>
-                                        <div className="space-y-3">
-                                            {categorySkills.map((skill) => (
-                                                <div key={skill.id}>
-                                                    <div className="flex justify-between mb-1">
-                                                        <span className="text-gray-300 text-sm">{skill.name}</span>
-                                                        <div className="flex">
-                                                            {getProficiencyStars(skill.proficiency || 1)}
-                                                        </div>
-                                                    </div>
-                                                    {skill.yearsOfExperience && (
-                                                        <p className="text-gray-400 text-xs">
-                                                            {skill.yearsOfExperience} años de experiencia
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Certificaciones */}
-            {certifications.length > 0 && (
-                <div className="max-w-5xl mx-auto mt-12">
-                    <h2 className="text-2xl font-semibold text-purple-300 mb-6">Certificaciones</h2>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        {certifications.map((cert) => (
-                            <div key={cert.id} className="bg-gray-700 p-4 rounded-lg">
-                                <h3 className="text-purple-200 font-semibold">{cert.name}</h3>
-                                <p className="text-gray-300 text-sm">{cert.institution}</p>
-                                <p className="text-gray-400 text-sm">
-                                    Emitida: {cert.issuedDate ? new Date(cert.issuedDate).toLocaleDateString('es-ES') : 'Fecha no especificada'}
-                                </p>
-                                {cert.certificateNumber && (
-                                    <p className="text-gray-400 text-xs">N°: {cert.certificateNumber}</p>
-                                )}
-                                {cert.description && (
-                                    <div className="text-gray-300 text-sm mt-2">
-                                        <div dangerouslySetInnerHTML={{ __html: cert.description.replace(/\n/g, '<br>') }} />
-                                    </div>
-                                )}
+        <section id="education" className="px-6 py-16">
+            <div className="max-w-5xl mx-auto">
+                <h2 className="text-2xl font-semibold mb-8 text-center" style={{ color: theme.titleColor }}>Formación y Habilidades</h2>
+                <div className="grid md:grid-cols-2 gap-8">
+                    {/* Educación */}
+                    <div>
+                        <h3 className="text-xl font-semibold mb-4 text-center" style={{ color: theme.titleColor }}>Educación</h3>
+                        {education.length === 0 ? (
+                            <div className="bg-gray-800 p-6 rounded-lg text-center">
+                                <p className="text-gray-400">No hay educación registrada aún.</p>
+                                <p className="text-gray-500 text-sm mt-2">Agregue educación desde el panel de administración.</p>
                             </div>
-                        ))}
+                        ) : (
+                            <div className="space-y-4">
+                                {education.map((edu) => (
+                                    <div key={edu.id} className="bg-gray-800 p-6 rounded-lg">
+                                        <h3 className="text-lg font-semibold text-purple-200">
+                                            {edu.degree}
+                                        </h3>
+                                        <p className="text-gray-300">{edu.institution}</p>
+                                        <p className="text-gray-400 text-sm">
+                                            {formatDate(edu.startDate)} - {edu.current ? 'Presente' : formatDate(edu.endDate)}
+                                        </p>
+                                        {edu.field && (
+                                            <p className="text-purple-300 text-sm mt-1">
+                                                Especialidad: {edu.field}
+                                            </p>
+                                        )}
+                                        {edu.description && (
+                                            <div className="text-gray-300 text-sm mt-3">
+                                                <div dangerouslySetInnerHTML={{ __html: edu.description.replace(/\n/g, '<br>') }} />
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Habilidades Técnicas */}
+                    <div>
+                        <h3 className="text-xl font-semibold mb-4 text-center" style={{ color: theme.titleColor }}>Habilidades Técnicas</h3>
+                        {skills.length === 0 ? (
+                            <div className="bg-gray-800 p-6 rounded-lg text-center">
+                                <p className="text-gray-400">No hay habilidades registradas aún.</p>
+                                <p className="text-gray-500 text-sm mt-2">Agregue habilidades desde el panel de administración.</p>
+                            </div>
+                        ) : (
+                            <div className="bg-gray-800 p-6 rounded-lg">
+                                {/* Agrupar skills por categoría */}
+                                {['BIM Software', 'CAD Software', 'Modelado 3D', 'Render & Visualización', 'Gestión de Proyectos', 'Urbanismo y Paisajismo', 'Software de Oficina'].map(category => {
+                                    const categorySkills = skills.filter(skill => skill.category === category);
+                                    if (categorySkills.length === 0) return null;
+
+                                    return (
+                                        <div key={category} className="mb-6">
+                                            <h4 className="text-purple-200 font-medium mb-3">{category}</h4>
+                                            <div className="space-y-3">
+                                                {categorySkills.map((skill) => (
+                                                    <div key={skill.id}>
+                                                        <div className="flex justify-between mb-1">
+                                                            <span className="text-gray-300 text-sm">{skill.name}</span>
+                                                            <div className="flex">
+                                                                {getProficiencyStars(skill.proficiency || 1)}
+                                                            </div>
+                                                        </div>
+                                                        {skill.yearsOfExperience && (
+                                                            <p className="text-gray-400 text-xs">
+                                                                {skill.yearsOfExperience} años de experiencia
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
-            )}
+
+            </div>
         </section>
     );
 }

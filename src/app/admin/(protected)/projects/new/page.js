@@ -251,9 +251,13 @@ export default function ProjectFormPage() {
                 featured: formData.featured,
                 startDate: formData.startDate ? Timestamp.fromDate(new Date(formData.startDate + '-01')) : null,
                 endDate: formData.endDate ? Timestamp.fromDate(new Date(formData.endDate + '-01')) : null,
-                createdAt: isEditing ? undefined : Timestamp.now(),
                 updatedAt: Timestamp.now()
             };
+
+            // Solo agregar createdAt si es nuevo proyecto
+            if (!isEditing) {
+                projectData.createdAt = Timestamp.now();
+            }
 
             await setDoc(docRef, projectData, { merge: false });
             console.log('Proyecto guardado exitosamente');

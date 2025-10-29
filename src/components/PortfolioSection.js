@@ -2,11 +2,13 @@
 import { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { useTheme } from '../contexts/ThemeContext';
 
 export function PortfolioSection() {
     const [projects, setProjects] = useState([]);
     const [selectedProject, setSelectedProject] = useState(null);
     const [loading, setLoading] = useState(true);
+    const { theme } = useTheme();
 
     useEffect(() => {
         fetchProjects();
@@ -30,7 +32,7 @@ export function PortfolioSection() {
 
     if (loading) {
         return (
-            <section id="portfolio" className="px-6 py-10">
+            <section id="portfolio" className="px-6 py-16">
                 <div className="text-center mb-8">
                     <div className="h-8 bg-gray-700 rounded w-48 mx-auto"></div>
                 </div>
@@ -52,8 +54,8 @@ export function PortfolioSection() {
     }
 
     return (
-        <section id="portfolio" className="px-6 py-10">
-            <h2 className="text-2xl font-semibold text-purple-300 mb-8 text-center">
+        <section id="portfolio" className="px-6 py-16">
+            <h2 className="text-2xl font-semibold mb-8 text-center" style={{ color: theme.titleColor }}>
                 Portafolio Arquitectónico
             </h2>
 
@@ -85,7 +87,7 @@ export function PortfolioSection() {
                                 </div>
                             )}
                             <div className="p-4">
-                                <h3 className="text-lg font-medium text-purple-300">
+                                <h3 className="text-lg font-medium" style={{ color: theme.titleColor }}>
                                     {project.title}
                                 </h3>
                                 {project.category && (
@@ -114,7 +116,7 @@ export function PortfolioSection() {
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <div>
-                                    <h3 className="text-xl font-semibold text-purple-300">
+                                    <h3 className="text-xl font-semibold" style={{ color: theme.titleColor }}>
                                         {selectedProject.title}
                                     </h3>
                                     {selectedProject.category && (
@@ -150,7 +152,7 @@ export function PortfolioSection() {
                             {/* Descripción */}
                             {selectedProject.description && (
                                 <div className="mb-4">
-                                    <h4 className="text-lg font-medium text-purple-300 mb-2">Descripción</h4>
+                                    <h4 className="text-lg font-medium mb-2" style={{ color: theme.titleColor }}>Descripción</h4>
                                     <div className="text-gray-300 leading-relaxed">
                                         <div dangerouslySetInnerHTML={{ __html: selectedProject.description.replace(/\n/g, '<br>') }} />
                                     </div>
@@ -160,7 +162,7 @@ export function PortfolioSection() {
                             {/* Tecnologías */}
                             {selectedProject.technologies && selectedProject.technologies.length > 0 && (
                                 <div className="mb-4">
-                                    <h4 className="text-lg font-medium text-purple-300 mb-2">Software Utilizado</h4>
+                                    <h4 className="text-lg font-medium mb-2" style={{ color: theme.titleColor }}>Software Utilizado</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {selectedProject.technologies.map((tech, index) => (
                                             <span key={index} className="bg-purple-900 text-purple-200 px-3 py-1 rounded-full text-sm">

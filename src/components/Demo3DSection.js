@@ -3,6 +3,7 @@ import React, { useRef } from 'react';
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { useLanguage } from '../contexts/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 function BoxDemo() {
     const meshRef = useRef();
@@ -34,10 +35,11 @@ function BoxDemo() {
 
 export function Demo3DSection() {
     const { t } = useLanguage();
+    const { theme } = useTheme();
 
     return (
-        <section id="renders3d" className="px-6 py-10 bg-gray-800">
-            <h2 className="text-2xl font-semibold text-purple-300 mb-4 text-center">
+        <section id="renders3d" className="px-6 py-16 bg-gray-800">
+            <h2 className="text-2xl font-semibold mb-4 text-center" style={{ color: theme.titleColor }}>
                 {t('demo3d')}
             </h2>
             <div className="w-full h-64 max-w-lg mx-auto">

@@ -12,6 +12,8 @@ const DEFAULT_THEME = {
     titleColorClass: 'text-purple-400',
     accentColor: '#c084fc', // purple-500
     accentColorClass: 'text-purple-500',
+    titleFont: 'system-ui',
+    textFont: 'system-ui',
 };
 
 export function ThemeProvider({ children }) {

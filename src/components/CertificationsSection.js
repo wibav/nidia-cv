@@ -2,10 +2,12 @@
 import { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { useTheme } from '../contexts/ThemeContext';
 
 export function CertificationsSection() {
     const [certifications, setCertifications] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { theme } = useTheme();
 
     useEffect(() => {
         fetchCertifications();
@@ -29,7 +31,7 @@ export function CertificationsSection() {
 
     if (loading) {
         return (
-            <section id="certifications" className="px-6 py-10 bg-gray-800">
+            <section id="certifications" className="px-6 py-16 bg-gray-800">
                 <div className="max-w-5xl mx-auto">
                     <div className="h-8 bg-gray-700 rounded w-48 mb-6"></div>
                     <div className="grid md:grid-cols-2 gap-6">
@@ -51,13 +53,13 @@ export function CertificationsSection() {
     }
 
     return (
-        <section id="certifications" className="px-6 py-10 bg-gray-800">
+        <section id="certifications" className="px-6 py-16 bg-gray-800">
             <div className="max-w-5xl mx-auto">
-                <h2 className="text-2xl font-semibold text-purple-300 mb-6">Certificaciones</h2>
+                <h2 className="text-2xl font-semibold mb-6 text-center" style={{ color: theme.titleColor }}>Certificaciones</h2>
                 <div className="grid md:grid-cols-2 gap-6">
                     {certifications.map((cert) => (
                         <div key={cert.id} className="bg-gray-700 p-4 rounded-lg">
-                            <h3 className="text-purple-200 font-semibold">{cert.name}</h3>
+                            <h3 className="font-semibold" style={{ color: theme.titleColor }}>{cert.name}</h3>
                             <p className="text-gray-300 text-sm">{cert.institution}</p>
                             <p className="text-gray-400 text-sm">
                                 Emitida: {cert.issuedDate ? new Date(cert.issuedDate).toLocaleDateString('es-ES') : 'Fecha no especificada'}
